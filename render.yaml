@@ -1,0 +1,26 @@
+services:
+  # Backend API
+  - type: web
+    name: coding-mentor-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GROQ_API_KEY
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+
+  # Frontend
+  - type: web
+    name: coding-mentor-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false
