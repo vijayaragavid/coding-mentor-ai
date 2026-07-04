@@ -213,7 +213,7 @@ export function QuizPanel() {
             </div>
 
             {/* Question Review */}
-            {questions.map((q, idx) => {
+            {questions.map((q) => {
               const questionResult = result.results.find((r) => r.id === q.id);
               if (!questionResult) return null;
 
