@@ -7,12 +7,31 @@ import type {
   CodeExplanation,
   ConceptExplanation,
   Level,
+  User,
 } from '../types';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
 });
+
+// Attach token from localStorage to every request
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+// Auth
+export const authApi = {
+  register: (name: string, email: string, password: string) =>
+    api.post<{ user: User; token: string }>('/auth/register', { name, email, password }).then(r => r.data),
+  login: (email: string, password: string) =>
+    api.post<{ user: User; token: string }>('/auth/login', { email, password }).then(r => r.data),
+  logout: () => api.post('/auth/logout'),
+  me: () => api.get<{ user: User }>('/auth/me').then(r => r.data),
+};
 
 // Sessions
 export const sessionsApi = {
@@ -71,9 +90,13 @@ export async function streamChat(
 ) {
   try {
     const baseUrl = import.meta.env.VITE_API_URL || '/api';
+    const token = localStorage.getItem('token');
     const response = await fetch(`${baseUrl}/chat/stream`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({ sessionId, message }),
     });
 

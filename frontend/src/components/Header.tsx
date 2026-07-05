@@ -1,5 +1,6 @@
-import { Moon, Sun, Menu, Code2, MessageSquare, Search, Lightbulb, BookOpen } from 'lucide-react';
+import { Moon, Sun, Menu, Code2, MessageSquare, Search, Lightbulb, BookOpen, LogOut } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import { authApi } from '../lib/api';
 import type { Tab } from '../types';
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
@@ -10,7 +11,12 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
 ];
 
 export function Header() {
-  const { activeTab, setActiveTab, darkMode, toggleDarkMode, toggleSidebar } = useStore();
+  const { activeTab, setActiveTab, darkMode, toggleDarkMode, toggleSidebar, user, logout } = useStore();
+
+  const handleLogout = async () => {
+    await authApi.logout().catch(() => {});
+    logout();
+  };
 
   return (
     <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
@@ -55,6 +61,21 @@ export function Header() {
         >
           {darkMode ? <Sun size={20} /> : <Moon size={20} />}
         </button>
+        {user && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+              👋 {user.name}
+            </span>
+            <button
+              onClick={handleLogout}
+              className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 transition-colors"
+              aria-label="Logout"
+              title="Logout"
+            >
+              <LogOut size={18} />
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );

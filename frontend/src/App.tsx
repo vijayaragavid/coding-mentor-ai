@@ -1,15 +1,16 @@
 import { useEffect } from 'react';
 import { useStore } from './store/useStore';
-import { sessionsApi } from './lib/api';
+import { sessionsApi, authApi } from './lib/api';
 import { Sidebar } from './components/Sidebar';
 import { ChatPanel } from './components/ChatPanel';
 import { CodeReviewPanel } from './components/CodeReviewPanel';
 import { QuizPanel } from './components/QuizPanel';
 import { ExplainPanel } from './components/ExplainPanel';
 import { Header } from './components/Header';
+import { AuthPage } from './components/AuthPage';
 
 function App() {
-  const { activeTab, darkMode, setSessions } = useStore();
+  const { activeTab, darkMode, setSessions, user, setUser, token, logout } = useStore();
 
   // Apply dark mode on mount
   useEffect(() => {
@@ -17,10 +18,26 @@ function App() {
     else document.documentElement.classList.remove('dark');
   }, [darkMode]);
 
-  // Load sessions on mount
+  // Check if user is already logged in via token
   useEffect(() => {
-    sessionsApi.getAll().then(setSessions).catch(console.error);
-  }, [setSessions]);
+    if (token && !user) {
+      authApi.me()
+        .then(data => setUser(data.user))
+        .catch(() => logout());
+    }
+  }, [token, user, setUser, logout]);
+
+  // Load sessions when user is logged in
+  useEffect(() => {
+    if (user) {
+      sessionsApi.getAll().then(setSessions).catch(console.error);
+    }
+  }, [user, setSessions]);
+
+  // Show login page if not authenticated
+  if (!user) {
+    return <AuthPage />;
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">

@@ -4,8 +4,12 @@ import { openai, MODEL, SYSTEM_PROMPTS } from '../lib/openai';
 import { getSession, addMessage } from '../lib/sessionStore';
 import { validate } from '../middleware/validate';
 import { createError } from '../middleware/errorHandler';
+import { requireAuth } from '../lib/auth';
 
 export const chatRouter = Router();
+
+// All chat routes require auth
+chatRouter.use(requireAuth);
 
 const chatSchema = z.object({
   sessionId: z.string().uuid(),

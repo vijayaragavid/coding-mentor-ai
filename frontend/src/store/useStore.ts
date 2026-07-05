@@ -1,7 +1,14 @@
 import { create } from 'zustand';
-import type { Session, Tab, Level, Language } from '../types';
+import type { Session, Tab, Level, Language, User } from '../types';
 
 interface AppState {
+  // Auth
+  user: User | null;
+  token: string | null;
+  setUser: (user: User | null) => void;
+  setToken: (token: string | null) => void;
+  logout: () => void;
+
   // Sessions
   sessions: Session[];
   activeSessionId: string | null;
@@ -27,6 +34,20 @@ interface AppState {
 }
 
 export const useStore = create<AppState>((set) => ({
+  // Auth
+  user: null,
+  token: localStorage.getItem('token'),
+  setUser: (user) => set({ user }),
+  setToken: (token) => {
+    if (token) localStorage.setItem('token', token);
+    else localStorage.removeItem('token');
+    set({ token });
+  },
+  logout: () => {
+    localStorage.removeItem('token');
+    set({ user: null, token: null, sessions: [], activeSessionId: null });
+  },
+
   // Sessions
   sessions: [],
   activeSessionId: null,

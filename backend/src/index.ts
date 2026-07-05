@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 import { rateLimit } from 'express-rate-limit';
 
 import { chatRouter } from './routes/chat';
@@ -9,6 +10,7 @@ import { codeReviewRouter } from './routes/codeReview';
 import { quizRouter } from './routes/quiz';
 import { explainRouter } from './routes/explain';
 import { sessionsRouter } from './routes/sessions';
+import { authRouter } from './routes/auth';
 import { errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
@@ -27,7 +29,7 @@ app.use(cors({
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
@@ -36,8 +38,10 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 app.use(express.json({ limit: '50kb' }));
+app.use(cookieParser());
 
 // Routes
+app.use('/api/auth', authRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/review', codeReviewRouter);
 app.use('/api/quiz', quizRouter);

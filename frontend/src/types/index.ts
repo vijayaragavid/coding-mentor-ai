@@ -86,3 +86,9 @@ export interface ConceptExplanation {
 export type Language = 'javascript' | 'typescript' | 'python' | 'java' | 'cpp' | 'rust' | 'go' | 'other';
 export type Level = 'beginner' | 'intermediate' | 'advanced';
 export type Tab = 'chat' | 'review' | 'quiz' | 'explain';
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+}

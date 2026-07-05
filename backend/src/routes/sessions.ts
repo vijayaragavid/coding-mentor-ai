@@ -3,14 +3,18 @@ import { z } from 'zod';
 import {
   createSession,
   getSession,
-  getAllSessions,
+  getSessionsByUser,
   deleteSession,
   updateSession,
 } from '../lib/sessionStore';
 import { validate } from '../middleware/validate';
 import { createError } from '../middleware/errorHandler';
+import { requireAuth } from '../lib/auth';
 
 export const sessionsRouter = Router();
+
+// All session routes require auth
+sessionsRouter.use(requireAuth);
 
 const createSchema = z.object({
   language: z.string().min(1).max(50).default('javascript'),
@@ -23,20 +27,24 @@ const updateSchema = z.object({
   level: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
 });
 
-sessionsRouter.get('/', (_req: Request, res: Response) => {
-  const sessions = getAllSessions();
+sessionsRouter.get('/', (req: Request, res: Response) => {
+  const userId = (req as any).user.userId;
+  const sessions = getSessionsByUser(userId);
   res.json(sessions);
 });
 
 sessionsRouter.post('/', validate(createSchema), (req: Request, res: Response) => {
+  const userId = (req as any).user.userId;
   const { language, level } = req.body;
-  const session = createSession(language, level);
+  const session = createSession(userId, language, level);
   res.status(201).json(session);
 });
 
 sessionsRouter.get('/:id', (req: Request, res: Response, next: NextFunction) => {
   const session = getSession(req.params.id);
   if (!session) return next(createError('Session not found', 404));
+  const userId = (req as any).user.userId;
+  if (session.userId !== userId) return next(createError('Forbidden', 403));
   res.json(session);
 });
 
